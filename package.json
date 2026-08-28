@@ -1,0 +1,27 @@
+{
+  "name": "preguntas-icfes",
+  "version": "1.0.0",
+  "description": "Estándar abierto de paquetes de preguntas tipo ICFES: schema, validador de referencia y ejemplos.",
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    ".": "./validador/validar.js",
+    "./schema/v1/paquete": "./schema/v1/paquete.schema.json",
+    "./schema/v1/pregunta": "./schema/v1/pregunta.schema.json"
+  },
+  "files": [
+    "schema",
+    "validador",
+    "docs",
+    "ejemplos",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

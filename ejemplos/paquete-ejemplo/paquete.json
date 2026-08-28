@@ -1,0 +1,100 @@
+{
+  "estandar": "preguntas-icfes",
+  "version_estandar": "1.0.0",
+  "nombre": "Ejemplo · Mecanismos de participación ciudadana",
+  "area": "Ciencias Sociales y Ciudadanas",
+  "preguntas": [
+    {
+      "id": "pc-001",
+      "competencia": "Pensamiento social",
+      "componente": "Sujeto, sociedad y estado",
+      "afirmacion": "Reconoce mecanismos de participación democrática",
+      "evidencia": "Identifica el mecanismo adecuado según el caso planteado",
+      "estandar_asociado": "Comprendo que el ejercicio político es el resultado de decisiones de individuos y grupos",
+      "que_evalua": "La capacidad de diferenciar mecanismos de participación ciudadana según el caso descrito.",
+      "contexto": [
+        { "tipo": "texto", "texto": "La Constitución de 1991 fortaleció la democracia participativa en Colombia." },
+        { "tipo": "imagen", "archivo": "grafico-1.png", "descripcion_accesible": "Personas votando en una mesa electoral" }
+      ],
+      "enunciado": [
+        { "tipo": "texto", "texto": "¿Cuál conjunto contiene únicamente mecanismos mencionados en el artículo 103?" }
+      ],
+      "opciones": [
+        {
+          "id": "A",
+          "contenido": [{ "tipo": "texto", "texto": "Voto, referendo, cabildo abierto y revocatoria del mandato" }],
+          "es_correcta": true,
+          "justificacion": "Correcta: el artículo 103 enumera exactamente estos mecanismos de participación."
+        },
+        {
+          "id": "B",
+          "contenido": [{ "tipo": "texto", "texto": "Tutela, voto, acción popular y petición" }],
+          "es_correcta": false,
+          "justificacion": "Incorrecta: la tutela y la acción popular son mecanismos de protección de derechos, no de participación democrática directa."
+        },
+        {
+          "id": "C",
+          "contenido": [{ "tipo": "texto", "texto": "Debate escolar, encuesta, referendo y tutela" }],
+          "es_correcta": false,
+          "justificacion": "Incorrecta: el debate escolar y la encuesta no son mecanismos constitucionales de participación."
+        },
+        {
+          "id": "D",
+          "contenido": [{ "tipo": "texto", "texto": "Veeduría, huelga, voto y acción de cumplimiento" }],
+          "es_correcta": false,
+          "justificacion": "Incorrecta: la huelga y la acción de cumplimiento no están entre los mecanismos que enumera el artículo 103."
+        }
+      ]
+    },
+    {
+      "id": "pc-002",
+      "competencia": "Pensamiento social",
+      "componente": "Sujeto, sociedad y estado",
+      "afirmacion": "Interpreta información estadística sobre participación electoral",
+      "evidencia": "Extrae una conclusión válida a partir de una tabla de datos",
+      "estandar_asociado": "Analizo críticamente los elementos constituyentes de la democracia",
+      "que_evalua": "La lectura de una tabla de participación electoral por grupo etario.",
+      "contexto": [
+        {
+          "tipo": "tabla",
+          "encabezados": ["Grupo etario", "Participación (%)"],
+          "filas": [
+            ["18-28 años", "42"],
+            ["29-45 años", "58"],
+            ["46-65 años", "67"],
+            ["Más de 65 años", "51"]
+          ]
+        }
+      ],
+      "enunciado": [
+        { "tipo": "texto", "texto": "Según la tabla, ¿qué grupo etario tuvo la mayor participación electoral?" }
+      ],
+      "opciones": [
+        {
+          "id": "A",
+          "contenido": [{ "tipo": "texto", "texto": "18-28 años" }],
+          "es_correcta": false,
+          "justificacion": "Incorrecta: este grupo tiene la participación más baja de la tabla (42%)."
+        },
+        {
+          "id": "B",
+          "contenido": [{ "tipo": "texto", "texto": "29-45 años" }],
+          "es_correcta": false,
+          "justificacion": "Incorrecta: hay un grupo con un porcentaje mayor (67%)."
+        },
+        {
+          "id": "C",
+          "contenido": [{ "tipo": "texto", "texto": "46-65 años" }],
+          "es_correcta": true,
+          "justificacion": "Correcta: 67% es el valor más alto de la columna de participación."
+        },
+        {
+          "id": "D",
+          "contenido": [{ "tipo": "imagen", "archivo": "mapa-2.png", "descripcion_accesible": "Mapa de Colombia con la opción marcada" }],
+          "es_correcta": false,
+          "justificacion": "Incorrecta: el grupo de más de 65 años tiene 51%, menor que el de 46-65 años."
+        }
+      ]
+    }
+  ]
+}

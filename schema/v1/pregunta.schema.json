@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/camilomoreno/preguntas-icfes/schema/v1/pregunta.schema.json",
+  "title": "Pregunta ICFES",
+  "type": "object",
+  "required": [
+    "id",
+    "competencia",
+    "componente",
+    "afirmacion",
+    "evidencia",
+    "estandar_asociado",
+    "que_evalua",
+    "contexto",
+    "enunciado",
+    "opciones"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identificador único dentro del paquete. Estable entre ediciones; permite referenciar la misma pregunta desde otros sistemas (p. ej. entre versiones A/B de una evaluación)."
+    },
+    "competencia": { "type": "string", "minLength": 1 },
+    "componente": { "type": "string", "minLength": 1 },
+    "afirmacion": { "type": "string", "minLength": 1 },
+    "evidencia": { "type": "string", "minLength": 1 },
+    "estandar_asociado": { "type": "string", "minLength": 1 },
+    "que_evalua": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Qué evalúa específicamente esta pregunta, en texto libre."
+    },
+    "contexto": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/bloque" },
+      "description": "Texto/imagen/tabla introductorios compartidos. Array vacío = sin contexto."
+    },
+    "enunciado": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/bloque" }
+    },
+    "opciones": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": { "$ref": "#/$defs/opcion" }
+    }
+  },
+  "$defs": {
+    "bloque": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["tipo", "texto"],
+          "additionalProperties": false,
+          "properties": {
+            "tipo": { "const": "texto" },
+            "texto": { "type": "string", "minLength": 1 }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["tipo", "archivo"],
+          "additionalProperties": false,
+          "properties": {
+            "tipo": { "const": "imagen" },
+            "archivo": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Nombre de archivo dentro de imagenes/, sin ruta."
+            },
+            "descripcion_accesible": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["tipo", "encabezados", "filas"],
+          "additionalProperties": false,
+          "properties": {
+            "tipo": { "const": "tabla" },
+            "encabezados": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string" }
+            },
+            "filas": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "description": "Cada fila debe tener el mismo número de columnas que encabezados (invariante validada por validador/validar.js, no expresable en JSON Schema puro)."
+            }
+          }
+        }
+      ]
+    },
+    "opcion": {
+      "type": "object",
+      "required": ["id", "contenido", "es_correcta", "justificacion"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "contenido": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/bloque" }
+        },
+        "es_correcta": { "type": "boolean" },
+        "justificacion": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Específica de esta opción, correcta o incorrecta. Nunca una explicación general compartida."
+        }
+      }
+    }
+  }
+}
