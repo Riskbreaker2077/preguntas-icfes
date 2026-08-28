@@ -4,6 +4,15 @@
   "description": "Estándar abierto de paquetes de preguntas tipo ICFES: schema, validador de referencia y ejemplos.",
   "type": "module",
   "license": "MIT",
+  "author": "Camilo Moreno",
+  "homepage": "https://riskbreaker2077.github.io/preguntas-icfes/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/riskbreaker2077/preguntas-icfes.git"
+  },
+  "bugs": {
+    "url": "https://github.com/riskbreaker2077/preguntas-icfes/issues"
+  },
   "exports": {
     ".": "./validador/validar.js",
     "./schema/v1/paquete": "./schema/v1/paquete.schema.json",
