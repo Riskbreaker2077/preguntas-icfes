@@ -1,4 +1,4 @@
-# Especificación · Preguntas ICFES v1.0.0
+# Especificación · Preguntas ICFES v1.1.0
 
 ## Qué resuelve
 
@@ -109,6 +109,76 @@ Exactamente 4 opciones por pregunta. Cada una:
 | `es_correcta` | Booleano. Exactamente una opción por pregunta debe ser `true`. |
 | `justificacion` | Texto no vacío, **específico de esa opción**. Para la correcta, por qué lo es; para cada incorrecta, el error puntual de esa opción (nunca "la respuesta correcta es la A" repetido). |
 
+### Grado y prueba de origen
+
+Dos campos opcionales, de tipo enum cerrado, para poder filtrar preguntas por
+grado escolar y por el programa de evaluación del que provienen:
+
+| Campo | Valores | Qué captura |
+|---|---|---|
+| `grado` | `"3"`–`"11"` | El grado escolar al que corresponde la pregunta. |
+| `prueba` | `"saber11"`, `"evaluar_para_avanzar"` | El programa de evaluación de origen. El catálogo puede ampliarse en futuras versiones menores del estándar. |
+
+A diferencia de la metadata pedagógica (texto libre porque el vocabulario
+varía por institución), aquí el universo de valores es finito y conocido, así
+que se cierra a un enum: evita que el mismo grado quede escrito de formas
+distintas (`"9"`, `"noveno"`, `"9°"`) y deje de ser filtrable.
+
+### Procedencia y trazabilidad
+
+No todo en una pregunta se produce de la misma forma: el enunciado puede venir
+extraído literalmente de un cuadernillo oficial mientras que la clasificación
+pedagógica la infiere una IA, y la respuesta correcta puede confirmarse después
+con una clave oficial encontrada más tarde. Tres campos, todos opcionales y a
+**nivel de pregunta**, capturan esto:
+
+- **`procedencia`**: de dónde viene cada bloque de la pregunta. Es un objeto
+  con hasta tres llaves, cada una con valor `"oficial"`, `"extraido_oficial"`
+  o `"ia_generada"`:
+
+  | Llave | Cubre |
+  |---|---|
+  | `contenido` | `contexto`, `enunciado` y el `contenido` de las opciones. |
+  | `clasificacion` | Los 6 campos de metadata pedagógica. |
+  | `respuesta_correcta` | Qué opción tiene `es_correcta: true`. |
+
+  La justificación de cada opción **no** entra en este objeto — ver más abajo.
+
+- **`verificado`**: si un humano confirmó la exactitud de cada bloque,
+  independientemente de su origen. Mismo formato que `procedencia` pero con
+  valores booleanos. Es ortogonal a `procedencia`: algo puede ser
+  `ia_generada` y estar `verificado: true` una vez un docente lo revisa.
+
+- **`fuentes`**: el nombre del PDF (dentro de `fuentes/` en el paquete ZIP, sin
+  ruta) del que se extrajo cada bloque. Mismas llaves que `procedencia`. Tiene
+  sentido sobre todo para bloques con procedencia `oficial` o
+  `extraido_oficial` — permite que `contenido` y `respuesta_correcta`
+  referencien documentos distintos (p. ej. el cuadernillo y la clave oficial,
+  publicados por separado).
+
+**Ausencia de estos campos significa "origen no declarado".** Ningún lector
+del estándar debe asumir automáticamente que una pregunta sin `procedencia`
+es confiable ni que no lo es.
+
+Cada **opción** además puede declarar, independientemente de la pregunta:
+
+| Campo | Tipo | Qué captura |
+|---|---|---|
+| `procedencia_justificacion` | mismo enum de 3 valores | El origen de la justificación de esa opción en particular. |
+| `justificacion_verificada` | booleano | Si un humano confirmó esa justificación. |
+
+Esto existe porque la retroalimentación oficial casi nunca cubre las 4
+opciones por igual: es común que solo la justificación de la respuesta
+correcta tenga fuente oficial, mientras las de las opciones incorrectas siguen
+siendo generadas por IA. Un único valor a nivel de pregunta no podría
+representar esa mezcla.
+
+**Sobre el historial de cambios**: el estándar no incluye un registro de
+cambios dentro del JSON (quién cambió qué campo y cuándo). Si necesitas esa
+trazabilidad, versiona los paquetes en git — cada commit ya captura el
+qué/cuándo/quién sin duplicar esa responsabilidad dentro del formato. Ver
+"Extensiones futuras" si tu institución necesita un `historial` estructurado.
+
 ## Invariantes
 
 Validadas por `validador/validar.js`; un solo error rechaza el paquete
@@ -122,25 +192,30 @@ completo (todo-o-nada), reportando todos los problemas encontrados:
 6. Todo bloque `tabla` tiene filas rectangulares: mismo número de columnas que `encabezados`.
 7. `id` de pregunta único dentro del paquete.
 8. `estandar` es exactamente `"preguntas-icfes"` y `version_estandar` sigue el patrón SemVer.
+9. Todo archivo referenciado en `fuentes.*` está presente en `fuentes/` dentro del paquete.
 
 ## Empaquetado ZIP
 
 ```
 paquete.zip
 ├── paquete.json
-└── imagenes/
-    ├── votacion-ciudadana.png
-    └── cabildo-abierto.png
+├── imagenes/
+│   ├── votacion-ciudadana.png
+│   └── cabildo-abierto.png
+└── fuentes/
+    ├── cuadernillo-epa-2024-grado11.pdf
+    └── clave-oficial-epa-2024.pdf
 ```
 
 - `paquete.json` es obligatorio.
 - `imagenes/` es opcional si ningún bloque de tipo `imagen` se usa.
-- Extensiones admitidas: `.png`, `.jpg`, `.jpeg`, `.webp`.
+- `fuentes/` es opcional si ningún campo `fuentes` se usa.
+- Extensiones admitidas: `.png`, `.jpg`, `.jpeg`, `.webp` en `imagenes/`; `.pdf` en `fuentes/`.
 - Reglas de seguridad recomendadas (heredadas de la implementación probada en
   OpenTest): peso máximo razonable del ZIP completo, solo entradas sin cifrar
   almacenadas o con DEFLATE, sin rutas absolutas ni `..` ni enlaces simbólicos,
-  sin nombres duplicados, sin carpetas fuera de `imagenes/`. Cada implementación
-  decide sus propios límites numéricos; el estándar no los fija.
+  sin nombres duplicados, sin carpetas fuera de `imagenes/` y `fuentes/`. Cada
+  implementación decide sus propios límites numéricos; el estándar no los fija.
 
 ## Extensiones futuras (fuera de v1)
 
@@ -152,6 +227,9 @@ paquete.zip
   afirmación-razón).
 - Nivel de dificultad.
 - Otros tipos de bloque de contenido (audio, fórmulas).
+- `historial` estructurado por pregunta (registro de cambios con fecha,
+  campo modificado y quién lo hizo), para instituciones que necesiten
+  auditoría dentro del propio JSON en vez de depender del historial de git.
 
 Cualquiera de estas ampliaciones es aditiva y no rompe paquetes v1 existentes,
 salvo que se decida lo contrario explícitamente en el CHANGELOG.
