@@ -47,9 +47,53 @@
       "minItems": 4,
       "maxItems": 4,
       "items": { "$ref": "#/$defs/opcion" }
+    },
+    "grado": {
+      "type": "string",
+      "enum": ["3", "4", "5", "6", "7", "8", "9", "10", "11"],
+      "description": "Grado escolar al que corresponde la pregunta. Opcional."
+    },
+    "prueba": {
+      "type": "string",
+      "enum": ["saber11", "evaluar_para_avanzar"],
+      "description": "Programa de evaluación de origen. Opcional; el catálogo puede ampliarse en futuras versiones menores."
+    },
+    "procedencia": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "contenido": { "$ref": "#/$defs/nivelProcedencia" },
+        "clasificacion": { "$ref": "#/$defs/nivelProcedencia" },
+        "respuesta_correcta": { "$ref": "#/$defs/nivelProcedencia" }
+      },
+      "description": "Origen de cada bloque de la pregunta: contenido (contexto/enunciado/opciones), clasificacion (los 6 campos de metadata pedagógica) y respuesta_correcta (qué opción es la correcta). Ausencia = origen no declarado. Opcional."
+    },
+    "verificado": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "contenido": { "type": "boolean" },
+        "clasificacion": { "type": "boolean" },
+        "respuesta_correcta": { "type": "boolean" }
+      },
+      "description": "Si un humano confirmó la exactitud de cada bloque, independientemente de su procedencia. Opcional."
+    },
+    "fuentes": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "contenido": { "type": "string", "minLength": 1 },
+        "clasificacion": { "type": "string", "minLength": 1 },
+        "respuesta_correcta": { "type": "string", "minLength": 1 }
+      },
+      "description": "Nombre de archivo PDF (dentro de fuentes/, sin ruta) del documento del que se extrajo cada bloque. Opcional, y solo tiene sentido para bloques con procedencia oficial o extraida_oficial."
     }
   },
   "$defs": {
+    "nivelProcedencia": {
+      "type": "string",
+      "enum": ["oficial", "extraido_oficial", "ia_generada"]
+    },
     "bloque": {
       "oneOf": [
         {
@@ -114,6 +158,14 @@
           "type": "string",
           "minLength": 1,
           "description": "Específica de esta opción, correcta o incorrecta. Nunca una explicación general compartida."
+        },
+        "procedencia_justificacion": {
+          "$ref": "#/$defs/nivelProcedencia",
+          "description": "Origen de esta justificación en particular. Opcional; permite que una opción tenga retroalimentación oficial mientras las demás siguen siendo generadas por IA."
+        },
+        "justificacion_verificada": {
+          "type": "boolean",
+          "description": "Si un humano confirmó la exactitud de esta justificación. Opcional."
         }
       }
     }

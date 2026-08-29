@@ -78,7 +78,23 @@ const CAMPOS_METADATA = [
   "que_evalua",
 ];
 
-function validarPregunta(pregunta, indice, errores, nombresImagenes, idsVistos) {
+const BUCKETS_PROCEDENCIA = ["contenido", "clasificacion", "respuesta_correcta"];
+
+function validarFuentes(pregunta, preguntaId, errores, nombresFuentes) {
+  const fuentes = pregunta?.fuentes;
+  if (fuentes === undefined) return;
+  for (const bucket of BUCKETS_PROCEDENCIA) {
+    const archivo = fuentes[bucket];
+    if (archivo === undefined) continue;
+    if (!esStringNoVacio(archivo)) {
+      error(errores, preguntaId, "fuentes", `Pregunta ${preguntaId}: "fuentes.${bucket}" no puede estar vacío.`);
+      continue;
+    }
+    nombresFuentes.add(archivo);
+  }
+}
+
+function validarPregunta(pregunta, indice, errores, nombresImagenes, idsVistos, nombresFuentes) {
   const preguntaId = esStringNoVacio(pregunta?.id) ? pregunta.id : `#${indice + 1}`;
 
   if (!esStringNoVacio(pregunta?.id)) {
@@ -94,6 +110,8 @@ function validarPregunta(pregunta, indice, errores, nombresImagenes, idsVistos) 
       error(errores, preguntaId, campo, `Pregunta ${preguntaId}: falta "${campo}" o está vacío.`);
     }
   }
+
+  validarFuentes(pregunta, preguntaId, errores, nombresFuentes);
 
   validarArrayDeBloques(pregunta?.contexto ?? [], "contexto", preguntaId, "contexto", errores, nombresImagenes);
 
@@ -159,11 +177,15 @@ function validarPregunta(pregunta, indice, errores, nombresImagenes, idsVistos) 
  * @param {Set<string>|string[]} [opciones.imagenesDisponibles] - nombres de archivo
  *   presentes en imagenes/ dentro del paquete ZIP, para validar que cada bloque
  *   de imagen referencia un archivo existente. Si se omite, esa comprobación se salta.
+ * @param {Set<string>|string[]} [opciones.fuentesDisponibles] - nombres de archivo
+ *   presentes en fuentes/ dentro del paquete ZIP, para validar que cada entrada de
+ *   "fuentes" referencia un archivo existente. Si se omite, esa comprobación se salta.
  * @returns {{ valido: boolean, errores: { pregunta_id: string|null, campo: string, mensaje: string }[] }}
  */
 export function validarPaquete(paquete, opciones = {}) {
   const errores = [];
   const nombresImagenes = new Set();
+  const nombresFuentes = new Set();
 
   if (typeof paquete !== "object" || paquete === null) {
     return { valido: false, errores: [{ pregunta_id: null, campo: "paquete", mensaje: "El paquete debe ser un objeto JSON." }] };
@@ -185,7 +207,7 @@ export function validarPaquete(paquete, opciones = {}) {
   }
 
   const idsVistos = new Set();
-  preguntas.forEach((pregunta, i) => validarPregunta(pregunta, i, errores, nombresImagenes, idsVistos));
+  preguntas.forEach((pregunta, i) => validarPregunta(pregunta, i, errores, nombresImagenes, idsVistos, nombresFuentes));
 
   const imagenesDisponibles = opciones.imagenesDisponibles
     ? new Set(opciones.imagenesDisponibles)
@@ -194,6 +216,17 @@ export function validarPaquete(paquete, opciones = {}) {
     for (const archivo of nombresImagenes) {
       if (!imagenesDisponibles.has(archivo)) {
         error(errores, null, "imagenes", `La imagen "${archivo}" está referenciada pero no existe en imagenes/ dentro del paquete.`);
+      }
+    }
+  }
+
+  const fuentesDisponibles = opciones.fuentesDisponibles
+    ? new Set(opciones.fuentesDisponibles)
+    : null;
+  if (fuentesDisponibles) {
+    for (const archivo of nombresFuentes) {
+      if (!fuentesDisponibles.has(archivo)) {
+        error(errores, null, "fuentes", `La fuente "${archivo}" está referenciada pero no existe en fuentes/ dentro del paquete.`);
       }
     }
   }

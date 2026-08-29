@@ -45,6 +45,7 @@ test("el paquete de ejemplo del repo es válido", () => {
   const paquete = cargarPaqueteEjemplo();
   const { valido, errores } = validarPaquete(paquete, {
     imagenesDisponibles: ["grafico-1.png", "mapa-2.png"],
+    fuentesDisponibles: ["cuadernillo-epa-2024-grado11.pdf", "clave-oficial-epa-2024.pdf"],
   });
   assert.deepEqual(errores, []);
   assert.equal(valido, true);
@@ -135,6 +136,39 @@ test("rechaza una imagen que no está en imagenesDisponibles", () => {
 test("no valida imágenes si no se pasa imagenesDisponibles", () => {
   const paquete = paqueteValidoBase();
   paquete.preguntas[0].contexto = [{ tipo: "imagen", archivo: "cualquier-cosa.png" }];
+  const { valido, errores } = validarPaquete(paquete);
+  assert.deepEqual(errores, []);
+  assert.equal(valido, true);
+});
+
+test("rechaza una fuente que no está en fuentesDisponibles", () => {
+  const paquete = paqueteValidoBase();
+  paquete.preguntas[0].fuentes = { contenido: "no-existe.pdf" };
+  const { valido, errores } = validarPaquete(paquete, { fuentesDisponibles: [] });
+  assert.equal(valido, false);
+  assert.ok(errores.some((e) => /no-existe\.pdf/.test(e.mensaje)));
+});
+
+test("no valida fuentes si no se pasa fuentesDisponibles", () => {
+  const paquete = paqueteValidoBase();
+  paquete.preguntas[0].fuentes = { contenido: "cualquier-cosa.pdf" };
+  const { valido, errores } = validarPaquete(paquete);
+  assert.deepEqual(errores, []);
+  assert.equal(valido, true);
+});
+
+test("acepta procedencia, verificado, grado, prueba y procedencia_justificacion", () => {
+  const paquete = paqueteValidoBase();
+  paquete.preguntas[0].grado = "9";
+  paquete.preguntas[0].prueba = "evaluar_para_avanzar";
+  paquete.preguntas[0].procedencia = {
+    contenido: "extraido_oficial",
+    clasificacion: "ia_generada",
+    respuesta_correcta: "oficial",
+  };
+  paquete.preguntas[0].verificado = { respuesta_correcta: true };
+  paquete.preguntas[0].opciones[0].procedencia_justificacion = "oficial";
+  paquete.preguntas[0].opciones[0].justificacion_verificada = true;
   const { valido, errores } = validarPaquete(paquete);
   assert.deepEqual(errores, []);
   assert.equal(valido, true);

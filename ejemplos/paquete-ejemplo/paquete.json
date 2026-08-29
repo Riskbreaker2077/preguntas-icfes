@@ -1,6 +1,6 @@
 {
   "estandar": "preguntas-icfes",
-  "version_estandar": "1.0.0",
+  "version_estandar": "1.1.0",
   "nombre": "Ejemplo · Mecanismos de participación ciudadana",
   "area": "Ciencias Sociales y Ciudadanas",
   "preguntas": [
@@ -12,6 +12,21 @@
       "evidencia": "Identifica el mecanismo adecuado según el caso planteado",
       "estandar_asociado": "Comprendo que el ejercicio político es el resultado de decisiones de individuos y grupos",
       "que_evalua": "La capacidad de diferenciar mecanismos de participación ciudadana según el caso descrito.",
+      "grado": "11",
+      "prueba": "evaluar_para_avanzar",
+      "procedencia": {
+        "contenido": "extraido_oficial",
+        "clasificacion": "ia_generada",
+        "respuesta_correcta": "oficial"
+      },
+      "verificado": {
+        "contenido": true,
+        "respuesta_correcta": true
+      },
+      "fuentes": {
+        "contenido": "cuadernillo-epa-2024-grado11.pdf",
+        "respuesta_correcta": "clave-oficial-epa-2024.pdf"
+      },
       "contexto": [
         { "tipo": "texto", "texto": "La Constitución de 1991 fortaleció la democracia participativa en Colombia." },
         { "tipo": "imagen", "archivo": "grafico-1.png", "descripcion_accesible": "Personas votando en una mesa electoral" }
@@ -24,25 +39,30 @@
           "id": "A",
           "contenido": [{ "tipo": "texto", "texto": "Voto, referendo, cabildo abierto y revocatoria del mandato" }],
           "es_correcta": true,
-          "justificacion": "Correcta: el artículo 103 enumera exactamente estos mecanismos de participación."
+          "justificacion": "Correcta: el artículo 103 enumera exactamente estos mecanismos de participación.",
+          "procedencia_justificacion": "oficial",
+          "justificacion_verificada": true
         },
         {
           "id": "B",
           "contenido": [{ "tipo": "texto", "texto": "Tutela, voto, acción popular y petición" }],
           "es_correcta": false,
-          "justificacion": "Incorrecta: la tutela y la acción popular son mecanismos de protección de derechos, no de participación democrática directa."
+          "justificacion": "Incorrecta: la tutela y la acción popular son mecanismos de protección de derechos, no de participación democrática directa.",
+          "procedencia_justificacion": "ia_generada"
         },
         {
           "id": "C",
           "contenido": [{ "tipo": "texto", "texto": "Debate escolar, encuesta, referendo y tutela" }],
           "es_correcta": false,
-          "justificacion": "Incorrecta: el debate escolar y la encuesta no son mecanismos constitucionales de participación."
+          "justificacion": "Incorrecta: el debate escolar y la encuesta no son mecanismos constitucionales de participación.",
+          "procedencia_justificacion": "ia_generada"
         },
         {
           "id": "D",
           "contenido": [{ "tipo": "texto", "texto": "Veeduría, huelga, voto y acción de cumplimiento" }],
           "es_correcta": false,
-          "justificacion": "Incorrecta: la huelga y la acción de cumplimiento no están entre los mecanismos que enumera el artículo 103."
+          "justificacion": "Incorrecta: la huelga y la acción de cumplimiento no están entre los mecanismos que enumera el artículo 103.",
+          "procedencia_justificacion": "ia_generada"
         }
       ]
     },
