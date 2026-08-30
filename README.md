@@ -5,7 +5,7 @@
 **Estándar abierto para empaquetar preguntas de selección múltiple tipo ICFES**
 
 [![Licencia: MIT](https://img.shields.io/badge/licencia-MIT-blue.svg)](LICENSE)
-[![Estándar](https://img.shields.io/badge/estándar-v1.0.0-6e40c9.svg)](CHANGELOG.md)
+[![Estándar](https://img.shields.io/badge/estándar-v1.3.0-6e40c9.svg)](CHANGELOG.md)
 [![Sin dependencias](https://img.shields.io/badge/runtime-cero%20dependencias-2e7d32.svg)](validador/validar.js)
 
 [Sitio](https://riskbreaker2077.github.io/preguntas-icfes/) ·
@@ -99,12 +99,18 @@ npm test   # corre validador/validar.test.js contra el paquete de ejemplo
 
 ## Invariantes que valida
 
-1. Exactamente 4 opciones por pregunta, exactamente 1 correcta.
+1. Al menos 2 opciones por pregunta, exactamente 1 correcta (las preguntas
+   miembro de un grupo de emparejamiento no tienen opciones propias, ver
+   "Grupos de preguntas" en la especificación).
 2. Cada opción trae su propia justificación — incluidas las incorrectas.
-3. Los 6 campos de metadata pedagógica son obligatorios y no vacíos.
+3. Los 6 campos de metadata pedagógica son obligatorios y no vacíos, propios
+   o heredados de un grupo.
 4. Toda imagen referenciada existe dentro del paquete.
 5. Toda tabla tiene filas rectangulares.
-6. Cada `id` de pregunta es único dentro del paquete.
+6. Cada `id` de pregunta y cada `id` de grupo son únicos dentro del paquete.
+7. `version_estandar`, tanto de paquete como de pregunta (si esta última lo
+   declara), sigue SemVer y no es menor que lo que exigen los campos
+   realmente usados.
 
 ## Versionado
 

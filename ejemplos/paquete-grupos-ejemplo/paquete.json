@@ -1,0 +1,207 @@
+{
+  "estandar": "preguntas-icfes",
+  "version_estandar": "1.2.0",
+  "nombre": "Ejemplo · Grupos de preguntas (contexto compartido, banco de opciones, texto con blancos)",
+  "grupos": [
+    {
+      "id": "grp-lectura-01",
+      "tipo": "contexto_compartido",
+      "contexto": [
+        { "tipo": "texto", "texto": "Los plásticos son compuestos con estructuras químicas diversas, ampliamente utilizados en la sociedad actual. Investigaciones recientes han reportado que el hongo Pestalotiopsis microspora es capaz de usar el poliuretano como única fuente de alimento. El hongo puede usarse directamente en las zonas de acumulación de poliuretano." }
+      ]
+    },
+    {
+      "id": "in-g-001",
+      "tipo": "banco_opciones",
+      "contexto": [
+        { "tipo": "texto", "texto": "Lee las descripciones de la columna de la izquierda (1-5). ¿Cuál palabra de la columna de la derecha (A-G) concuerda con cada descripción? La opción H se usa para el ejemplo. Sobran dos palabras más." }
+      ],
+      "banco": [
+        { "id": "A", "contenido": [{ "tipo": "texto", "texto": "arms" }] },
+        { "id": "B", "contenido": [{ "tipo": "texto", "texto": "ears" }] },
+        { "id": "C", "contenido": [{ "tipo": "texto", "texto": "face" }] },
+        { "id": "D", "contenido": [{ "tipo": "texto", "texto": "foot" }] },
+        { "id": "E", "contenido": [{ "tipo": "texto", "texto": "hair" }] },
+        { "id": "F", "contenido": [{ "tipo": "texto", "texto": "hands" }] },
+        { "id": "G", "contenido": [{ "tipo": "texto", "texto": "head" }] },
+        { "id": "H", "contenido": [{ "tipo": "texto", "texto": "mouth" }], "es_ejemplo": true }
+      ],
+      "metadata_pedagogica": {
+        "competencia": "Léxico",
+        "componente": "Vocabulario",
+        "afirmacion": "Reconoce vocabulario básico de uso frecuente (partes del cuerpo).",
+        "evidencia": "Relaciona una descripción funcional simple con la palabra que designa un objeto o parte del cuerpo conocido.",
+        "estandar_asociado": "Comprendo palabras y expresiones sencillas relacionadas con aspectos básicos de mi vida (Pre A1).",
+        "que_evalua": "El reconocimiento del vocabulario de partes del cuerpo a partir de su función."
+      }
+    },
+    {
+      "id": "in-g-004",
+      "tipo": "texto_con_blancos",
+      "contexto": [
+        { "tipo": "texto", "texto": "LANGUAGE MATTERS\n\nThe vocabulary we (0)______ programs our minds, so choosing the right words can change our lives.\n\nEven the (16)_______ word matters. \"Try\" is a short word, (17)_______ it has a great impact on us." }
+      ],
+      "metadata_pedagogica": {
+        "competencia": "Gramática y léxico en contexto",
+        "componente": "Comprensión de lectura",
+        "afirmacion": "Completa un texto usando el ítem léxico o gramatical apropiado según el contexto.",
+        "evidencia": "Selecciona la palabra que completa correctamente un espacio en un texto continuo, atendiendo a coherencia y cohesión.",
+        "estandar_asociado": "Identifico información específica en textos cortos y sencillos, aunque no entienda todos los detalles (A2).",
+        "que_evalua": "El uso de pistas contextuales para elegir la palabra correcta en un texto continuo."
+      }
+    }
+  ],
+  "preguntas": [
+    {
+      "id": "cs-g-201",
+      "grupo_id": "grp-lectura-01",
+      "competencia": "Pensamiento social",
+      "componente": "Ciencia, tecnología y sociedad",
+      "afirmacion": "Analiza el potencial del uso de una tecnología y sus efectos sobre el entorno.",
+      "evidencia": "Explica una ventaja de una tecnología frente a una alternativa.",
+      "estandar_asociado": "Explico cambios químicos en la cocina, la industria y el ambiente.",
+      "que_evalua": "El reconocimiento de una ventaja ambiental de una tecnología biológica.",
+      "contexto": [],
+      "enunciado": [
+        { "tipo": "texto", "texto": "¿Qué ventaja ambiental tiene usar el hongo directamente sobre la incineración?" }
+      ],
+      "opciones": [
+        {
+          "id": "A",
+          "contenido": [{ "tipo": "texto", "texto": "No requiere infraestructura especial para asegurar la degradación." }],
+          "es_correcta": true,
+          "justificacion": "Correcta: el hongo puede aplicarse directamente donde se acumula el residuo, sin infraestructura adicional."
+        },
+        {
+          "id": "B",
+          "contenido": [{ "tipo": "texto", "texto": "Degrada el material más rápido que la incineración." }],
+          "es_correcta": false,
+          "justificacion": "Incorrecta: la incineración es una reacción química mucho más rápida que la degradación biológica."
+        },
+        {
+          "id": "C",
+          "contenido": [{ "tipo": "texto", "texto": "No genera ningún tipo de residuo adicional." }],
+          "es_correcta": false,
+          "justificacion": "Incorrecta: el proceso de degradación biológica también puede generar subproductos."
+        },
+        {
+          "id": "D",
+          "contenido": [{ "tipo": "texto", "texto": "Permite reciclar el material para hacer envases nuevos." }],
+          "es_correcta": false,
+          "justificacion": "Incorrecta: el hongo degrada el poliuretano; no lo deja disponible para reciclarlo."
+        }
+      ]
+    },
+    {
+      "id": "in-001",
+      "grupo_id": "in-g-001",
+      "tipo_item": "miembro_banco_opciones",
+      "nivel_mcer": "Pre A1",
+      "valor": 1,
+      "contexto": [],
+      "enunciado": [{ "tipo": "texto", "texto": "You can kick a ball with this." }],
+      "respuesta_pool_id": "D",
+      "justificacion": "Opción D ('foot') es la correcta, dado que solo con el pie se puede patear."
+    },
+    {
+      "id": "in-002",
+      "grupo_id": "in-g-001",
+      "tipo_item": "miembro_banco_opciones",
+      "nivel_mcer": "Pre A1",
+      "valor": 1,
+      "contexto": [],
+      "enunciado": [{ "tipo": "texto", "texto": "You can listen to your mom and dad with these." }],
+      "respuesta_pool_id": "B",
+      "justificacion": "Opción B ('ears') es la correcta, dado que con los oídos se escucha."
+    },
+    {
+      "id": "in-003",
+      "grupo_id": "in-g-001",
+      "tipo_item": "miembro_banco_opciones",
+      "nivel_mcer": "Pre A1",
+      "valor": 1,
+      "contexto": [],
+      "enunciado": [{ "tipo": "texto", "texto": "People wear a hat on this." }],
+      "respuesta_pool_id": "G",
+      "justificacion": "Opción G ('head') es la correcta, dado que el sombrero se usa en la cabeza."
+    },
+    {
+      "id": "in-004",
+      "grupo_id": "in-g-001",
+      "tipo_item": "miembro_banco_opciones",
+      "nivel_mcer": "Pre A1",
+      "valor": 1,
+      "contexto": [],
+      "enunciado": [{ "tipo": "texto", "texto": "People usually write their name with these." }],
+      "respuesta_pool_id": "F",
+      "justificacion": "Opción F ('hands') es la correcta, dado que se escribe con las manos."
+    },
+    {
+      "id": "in-005",
+      "grupo_id": "in-g-001",
+      "tipo_item": "miembro_banco_opciones",
+      "nivel_mcer": "Pre A1",
+      "valor": 1,
+      "contexto": [],
+      "enunciado": [{ "tipo": "texto", "texto": "Some people like to have this in different colors." }],
+      "respuesta_pool_id": "E",
+      "justificacion": "Opción E ('hair') es la correcta, dado que el cabello se puede teñir de distintos colores."
+    },
+    {
+      "id": "in-016",
+      "grupo_id": "in-g-004",
+      "tipo_item": "miembro_texto_con_blancos",
+      "nivel_mcer": "A2",
+      "contexto": [],
+      "numero_blanco": 16,
+      "opciones": [
+        {
+          "id": "A",
+          "contenido": [{ "tipo": "texto", "texto": "smaller" }],
+          "es_correcta": false,
+          "justificacion": "Incorrecta: no hay un punto de comparación previo en el pasaje que justifique el comparativo."
+        },
+        {
+          "id": "B",
+          "contenido": [{ "tipo": "texto", "texto": "small" }],
+          "es_correcta": true,
+          "justificacion": "Correcta: el adjetivo en grado positivo encaja con el sentido del pasaje (ejemplo ilustrativo, no verificado contra clave oficial)."
+        },
+        {
+          "id": "C",
+          "contenido": [{ "tipo": "texto", "texto": "smallest" }],
+          "es_correcta": false,
+          "justificacion": "Incorrecta: el superlativo requeriría un grupo de comparación explícito que el pasaje no da."
+        }
+      ]
+    },
+    {
+      "id": "in-017",
+      "grupo_id": "in-g-004",
+      "tipo_item": "miembro_texto_con_blancos",
+      "nivel_mcer": "A2",
+      "contexto": [],
+      "numero_blanco": 17,
+      "opciones": [
+        {
+          "id": "A",
+          "contenido": [{ "tipo": "texto", "texto": "so" }],
+          "es_correcta": false,
+          "justificacion": "Incorrecta: 'so' introduce una consecuencia, no el contraste que exige el pasaje (ejemplo ilustrativo)."
+        },
+        {
+          "id": "B",
+          "contenido": [{ "tipo": "texto", "texto": "but" }],
+          "es_correcta": true,
+          "justificacion": "Correcta: el pasaje contrasta el tamaño corto de la palabra con su gran impacto (ejemplo ilustrativo, no verificado contra clave oficial)."
+        },
+        {
+          "id": "C",
+          "contenido": [{ "tipo": "texto", "texto": "or" }],
+          "es_correcta": false,
+          "justificacion": "Incorrecta: 'or' introduce una alternativa, no un contraste."
+        }
+      ]
+    }
+  ]
+}

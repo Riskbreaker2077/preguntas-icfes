@@ -1,4 +1,4 @@
-# Especificación · Preguntas ICFES v1.1.0
+# Especificación · Preguntas ICFES v1.3.0
 
 ## Qué resuelve
 
@@ -100,7 +100,9 @@ array vacío cuando la pregunta no comparte contexto con otras.
 
 ### Opciones
 
-Exactamente 4 opciones por pregunta. Cada una:
+Al menos 2 opciones por pregunta, sin tope superior (antes de v1.2.0 se
+exigían exactamente 4; los paquetes existentes con 4 opciones siguen siendo
+válidos sin cambios). Cada una:
 
 | Campo | Descripción |
 |---|---|
@@ -179,20 +181,122 @@ trazabilidad, versiona los paquetes en git — cada commit ya captura el
 qué/cuándo/quién sin duplicar esa responsabilidad dentro del formato. Ver
 "Extensiones futuras" si tu institución necesita un `historial` estructurado.
 
+## Grupos de preguntas
+
+Algunas preguntas no son independientes: comparten una situación o lectura
+con otras (común en Sociales y Español), comparten un banco de opciones que
+el estudiante ve y consume junto con varias preguntas a la vez (típico de
+ejercicios de emparejamiento en pruebas de lengua extranjera), o son un
+espacio en blanco dentro de un pasaje continuo, sin enunciado propio más
+allá de "completa este espacio" (ejercicios de *cloze*). El array opcional
+`grupos` en el paquete, y el campo opcional `grupo_id` en la pregunta,
+existen para representar estos tres casos sin inventar contenido ni forzar
+una pregunta a una forma que no le corresponde.
+
+**Una pregunta miembro de un grupo no está pensada para renderizarse
+suelta.** Un emparejamiento *es* una sola experiencia (varias descripciones
+y un banco de palabras, mostrados a la vez); un espacio en blanco *es* parte
+de un pasaje continuo. Una plataforma que quiera soportar estos tipos de
+pregunta debe resolver `grupo_id` contra `paquete.grupos` antes de
+mostrarlas; una plataforma que no los soporte aún debe **excluirlas**
+(filtrar por `tipo_item`), no intentar mostrarlas incompletas.
+
+Cada entrada de `grupos` tiene un `id` (único en el paquete) y un `tipo`
+que determina su forma:
+
+- **`contexto_compartido`**: `contexto` (bloques de texto/imagen/tabla) es
+  la situación o lectura compartida. Las preguntas miembro siguen trayendo
+  su propio `enunciado` y sus propias `opciones` (forma "estándar", sin
+  `tipo_item`) — el grupo solo evita repetir el mismo párrafo en cada
+  archivo, y le da a las herramientas (banco, visor, exportador) una forma
+  de saber que varias preguntas van juntas.
+- **`banco_opciones`**: `banco` es un array de `{ id, contenido, es_ejemplo?
+  }` — el banco de palabras/opciones que las preguntas del grupo comparten
+  y consumen. `es_ejemplo: true` marca la entrada usada como ejemplo
+  resuelto, que nunca puede ser la respuesta real de una pregunta. Las
+  preguntas miembro llevan `tipo_item: "miembro_banco_opciones"`: no tienen
+  `opciones` propias, sino `respuesta_pool_id` (el `id` dentro de
+  `grupos[].banco` que es la respuesta correcta) y su propia
+  `justificacion`.
+- **`texto_con_blancos`**: `contexto` es el pasaje compartido, con los
+  espacios marcados inline en el propio texto (p. ej. `"...the
+  (16)_______ word matters..."` — convención tipográfica; el estándar no
+  interpreta el marcador). Las preguntas miembro llevan `tipo_item:
+  "miembro_texto_con_blancos"`: no tienen `enunciado` propio (el pasaje del
+  grupo es el único estímulo), sino `numero_blanco` (qué espacio llenan) y
+  sus propias `opciones` (al menos 2, misma forma de siempre).
+
+Cualquier grupo puede declarar `metadata_pedagogica` (los mismos 6 campos
+que en una pregunta) para que las preguntas miembro que no traigan los
+suyos propios los hereden — útil porque en ejercicios de lengua extranjera
+la tabla de especificaciones suele redactarse una vez por bloque de
+preguntas, no pregunta por pregunta. El valor efectivo de cada campo es "el
+de la pregunta si lo trae, si no, el del grupo"; si ninguno de los dos lo
+trae, es un error de validación. Un grupo también puede declarar
+`procedencia_contenido`, `verificado_contenido` y `fuentes_contenido`
+(campos planos, no el objeto de 3 buckets que usa una pregunta, porque un
+grupo solo tiene "contenido", nunca `clasificacion` ni
+`respuesta_correcta` propios) para trazar el origen del estímulo
+compartido.
+
+Para áreas de lengua extranjera, el campo opcional `nivel_mcer` en la
+pregunta (`"Pre A1"` a `"C2"`) permite clasificar por nivel del Marco Común
+Europeo de Referencia, independiente de (y compatible con) la metadata
+pedagógica de 6 campos.
+
+### Puntaje y peso
+
+El campo opcional `valor` en la pregunta (número mayor que 0; ausente = 1)
+es el peso de esa pregunta en la calificación total. El puntaje de un
+paquete (o de un subconjunto que una plataforma decida calificar) es la
+suma de `valor` (con 1 por defecto cuando está ausente) sobre esas
+preguntas — nunca "un grupo cuenta como una sola pregunta". Un grupo de
+emparejamiento de 5 miembros, cada uno con `valor` ausente, vale
+naturalmente 5 puntos, igual que 5 preguntas sueltas de opción múltiple.
+
+### Versión por pregunta
+
+`version_estandar` (opcional, string SemVer) en la pregunta misma —
+distinto del `version_estandar` que ya trae el **paquete**. Existe porque
+un paquete describe la versión de *todo* el conjunto, pero un banco que
+guarda una pregunta por archivo (como `banco-preguntas-icfes`) no siempre
+envuelve cada archivo en un paquete: sin este campo, ese archivo suelto no
+tiene ninguna forma de decir de qué versión del estándar depende.
+
+El valor no es "con qué versión se escribió" sino **la versión mínima que
+exige el conjunto de campos que la pregunta usa**. Tabla de referencia
+(ver CHANGELOG.md para el detalle completo de cada versión):
+
+| Si la pregunta usa... | Exige al menos |
+|---|---|
+| Solo los campos de v1.0.0 (metadata pedagógica, `contexto`/`enunciado`/`opciones`, exactamente 4 opciones) | `"1.0.0"` |
+| `grado`, `prueba`, `procedencia`, `verificado`, `fuentes`, o `procedencia_justificacion`/`justificacion_verificada` en alguna opción | `"1.1.0"` |
+| `grupo_id`, `tipo_item`, `nivel_mcer`, `valor`, o un número de opciones distinto de 4 | `"1.2.0"` |
+
+Es opcional y su ausencia significa "versión no declarada" — igual que
+`procedencia`/`verificado`/`fuentes`, **no** implica "asumir v1.0.0".
+Cuando está presente, `validador/validar.js` sí comprueba que no sea menor
+que la versión mínima real de los campos usados (independientemente de si
+el número está bien formado como SemVer). Ver `docs/adopcion.md` para cómo
+retrocompletar este campo en preguntas ya existentes.
+
 ## Invariantes
 
 Validadas por `validador/validar.js`; un solo error rechaza el paquete
 completo (todo-o-nada), reportando todos los problemas encontrados:
 
-1. Cada pregunta tiene exactamente 4 opciones.
-2. Exactamente una opción por pregunta tiene `es_correcta: true`.
-3. Toda opción trae `justificacion` no vacía — incluidas las incorrectas.
-4. Los 6 campos de metadata pedagógica están presentes y no vacíos.
-5. Todo bloque `imagen` referencia un archivo presente en `imagenes/` dentro del paquete.
-6. Todo bloque `tabla` tiene filas rectangulares: mismo número de columnas que `encabezados`.
-7. `id` de pregunta único dentro del paquete.
-8. `estandar` es exactamente `"preguntas-icfes"` y `version_estandar` sigue el patrón SemVer.
-9. Todo archivo referenciado en `fuentes.*` está presente en `fuentes/` dentro del paquete.
+1. Cada pregunta con `opciones` (forma "estándar" o `miembro_texto_con_blancos`) tiene al menos 2, exactamente una marcada `es_correcta: true`. Una pregunta `miembro_banco_opciones` no tiene `opciones` propias; en su lugar, `respuesta_pool_id` debe existir en el `banco` de su grupo y no puede ser la entrada marcada `es_ejemplo`.
+2. Toda opción trae `justificacion` no vacía — incluidas las incorrectas. Una pregunta `miembro_banco_opciones` trae su propia `justificacion` en vez de una por opción.
+3. Los 6 campos de metadata pedagógica están presentes y no vacíos, ya sea en la pregunta o heredados de `grupo.metadata_pedagogica`.
+4. Todo bloque `imagen` referencia un archivo presente en `imagenes/` dentro del paquete.
+5. Todo bloque `tabla` tiene filas rectangulares: mismo número de columnas que `encabezados`.
+6. `id` de pregunta único dentro del paquete; `id` de grupo único dentro del paquete.
+7. `estandar` es exactamente `"preguntas-icfes"` y `version_estandar` sigue el patrón SemVer.
+8. Todo archivo referenciado en `fuentes.*` (o `fuentes_contenido` de un grupo) está presente en `fuentes/` dentro del paquete.
+9. `grupo_id` de una pregunta debe existir en `paquete.grupos`, y su `tipo_item` debe coincidir con el `tipo` de ese grupo (`contexto_compartido`→sin `tipo_item` o `"estandar"`, `banco_opciones`→`"miembro_banco_opciones"`, `texto_con_blancos`→`"miembro_texto_con_blancos"`).
+10. `numero_blanco` es único dentro de cada grupo de tipo `texto_con_blancos` (se puede repetir entre grupos distintos).
+11. `nivel_mcer` (si está presente) pertenece al catálogo MCER cerrado; `valor` (si está presente) es un número mayor que 0.
+12. `version_estandar` de una pregunta (si está presente) sigue el patrón SemVer y no es menor que la versión mínima que exigen los campos que esa pregunta realmente usa (ver "Versión por pregunta" arriba).
 
 ## Empaquetado ZIP
 
@@ -223,9 +327,12 @@ paquete.zip
   `evidencias` con `id` propio y descripción) para instituciones que quieran
   gobernanza centralizada del vocabulario, referenciado por `id` desde la
   pregunta en vez de texto libre repetido.
-- Otros tipos de pregunta (selección múltiple con múltiple respuesta,
-  afirmación-razón).
-- Nivel de dificultad.
+- Otros tipos de pregunta *standalone* (selección múltiple con múltiple
+  respuesta, afirmación-razón) — distinto de "Grupos de preguntas" (v1.2.0):
+  esto es sobre el formato de respuesta de una pregunta individual, no sobre
+  relaciones entre preguntas.
+- Nivel de dificultad (fuera del ya existente `nivel_mcer`, específico de
+  lengua extranjera).
 - Otros tipos de bloque de contenido (audio, fórmulas).
 - `historial` estructurado por pregunta (registro de cambios con fecha,
   campo modificado y quién lo hizo), para instituciones que necesiten

@@ -2,94 +2,173 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/camilomoreno/preguntas-icfes/schema/v1/pregunta.schema.json",
   "title": "Pregunta ICFES",
-  "type": "object",
-  "required": [
-    "id",
-    "competencia",
-    "componente",
-    "afirmacion",
-    "evidencia",
-    "estandar_asociado",
-    "que_evalua",
-    "contexto",
-    "enunciado",
-    "opciones"
-  ],
-  "additionalProperties": false,
-  "properties": {
-    "id": {
-      "type": "string",
-      "minLength": 1,
-      "description": "Identificador único dentro del paquete. Estable entre ediciones; permite referenciar la misma pregunta desde otros sistemas (p. ej. entre versiones A/B de una evaluación)."
-    },
-    "competencia": { "type": "string", "minLength": 1 },
-    "componente": { "type": "string", "minLength": 1 },
-    "afirmacion": { "type": "string", "minLength": 1 },
-    "evidencia": { "type": "string", "minLength": 1 },
-    "estandar_asociado": { "type": "string", "minLength": 1 },
-    "que_evalua": {
-      "type": "string",
-      "minLength": 1,
-      "description": "Qué evalúa específicamente esta pregunta, en texto libre."
-    },
-    "contexto": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/bloque" },
-      "description": "Texto/imagen/tabla introductorios compartidos. Array vacío = sin contexto."
-    },
-    "enunciado": {
-      "type": "array",
-      "minItems": 1,
-      "items": { "$ref": "#/$defs/bloque" }
-    },
-    "opciones": {
-      "type": "array",
-      "minItems": 4,
-      "maxItems": 4,
-      "items": { "$ref": "#/$defs/opcion" }
-    },
-    "grado": {
-      "type": "string",
-      "enum": ["3", "4", "5", "6", "7", "8", "9", "10", "11"],
-      "description": "Grado escolar al que corresponde la pregunta. Opcional."
-    },
-    "prueba": {
-      "type": "string",
-      "enum": ["saber11", "evaluar_para_avanzar"],
-      "description": "Programa de evaluación de origen. Opcional; el catálogo puede ampliarse en futuras versiones menores."
-    },
-    "procedencia": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "contenido": { "$ref": "#/$defs/nivelProcedencia" },
-        "clasificacion": { "$ref": "#/$defs/nivelProcedencia" },
-        "respuesta_correcta": { "$ref": "#/$defs/nivelProcedencia" }
+  "allOf": [
+    { "$ref": "#/$defs/camposComunes" },
+    {
+      "if": {
+        "properties": { "tipo_item": { "const": "miembro_banco_opciones" } },
+        "required": ["tipo_item"]
       },
-      "description": "Origen de cada bloque de la pregunta: contenido (contexto/enunciado/opciones), clasificacion (los 6 campos de metadata pedagógica) y respuesta_correcta (qué opción es la correcta). Ausencia = origen no declarado. Opcional."
-    },
-    "verificado": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "contenido": { "type": "boolean" },
-        "clasificacion": { "type": "boolean" },
-        "respuesta_correcta": { "type": "boolean" }
-      },
-      "description": "Si un humano confirmó la exactitud de cada bloque, independientemente de su procedencia. Opcional."
-    },
-    "fuentes": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "contenido": { "type": "string", "minLength": 1 },
-        "clasificacion": { "type": "string", "minLength": 1 },
-        "respuesta_correcta": { "type": "string", "minLength": 1 }
-      },
-      "description": "Nombre de archivo PDF (dentro de fuentes/, sin ruta) del documento del que se extrajo cada bloque. Opcional, y solo tiene sentido para bloques con procedencia oficial o extraida_oficial."
+      "then": { "$ref": "#/$defs/formaMiembroBancoOpciones" },
+      "else": {
+        "if": {
+          "properties": { "tipo_item": { "const": "miembro_texto_con_blancos" } },
+          "required": ["tipo_item"]
+        },
+        "then": { "$ref": "#/$defs/formaMiembroTextoConBlancos" },
+        "else": { "$ref": "#/$defs/formaEstandar" }
+      }
     }
-  },
+  ],
+  "unevaluatedProperties": false,
   "$defs": {
+    "camposComunes": {
+      "type": "object",
+      "required": ["id", "contexto"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Identificador único dentro del paquete. Estable entre ediciones; permite referenciar la misma pregunta desde otros sistemas (p. ej. entre versiones A/B de una evaluación)."
+        },
+        "competencia": { "type": "string", "minLength": 1 },
+        "componente": { "type": "string", "minLength": 1 },
+        "afirmacion": { "type": "string", "minLength": 1 },
+        "evidencia": { "type": "string", "minLength": 1 },
+        "estandar_asociado": { "type": "string", "minLength": 1 },
+        "que_evalua": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Qué evalúa específicamente esta pregunta, en texto libre."
+        },
+        "contexto": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/bloque" },
+          "description": "Texto/imagen/tabla introductorios propios de esta pregunta. Array vacío = sin contexto propio (puede seguir teniendo contexto heredado de un grupo, ver 'grupo_id')."
+        },
+        "grupo_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Id de un grupo en paquete.grupos del que esta pregunta es miembro. Opcional. Ausencia = pregunta independiente, sin grupo. Existencia del grupo referenciado y consistencia con su 'tipo' se validan en validador/validar.js (referencia cruzada, no expresable en JSON Schema puro)."
+        },
+        "tipo_item": {
+          "type": "string",
+          "enum": ["estandar", "miembro_banco_opciones", "miembro_texto_con_blancos"],
+          "description": "Forma estructural de la pregunta. Ausente o \"estandar\" = comportamiento v1.0/v1.1 (enunciado + opciones propias). \"miembro_banco_opciones\" y \"miembro_texto_con_blancos\" son miembros de un grupo (ver especificacion.md, sección \"Grupos de preguntas\") y no están pensados para renderizarse sueltos: un consumidor que no resuelva 'grupo_id' debe excluirlos, no intentar mostrarlos incompletos."
+        },
+        "nivel_mcer": {
+          "type": "string",
+          "enum": ["Pre A1", "A1", "A2", "B1", "B2", "C1", "C2"],
+          "description": "Nivel del Marco Común Europeo de Referencia, para áreas de lengua extranjera (p. ej. Inglés) que clasifican preguntas por nivel en vez de (o además de) Competencia/Componente. Opcional; independiente de la metadata pedagógica de 6 campos."
+        },
+        "valor": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Peso de esta pregunta en la calificación total del paquete/examen. Ausente = 1 (una pregunta 'normal' vale lo mismo que cualquier otra). Una plataforma que calcule un puntaje total debe sumar 'valor' (con 1 por defecto) sobre todas las preguntas que decida calificar, nunca contar un grupo entero como una sola pregunta."
+        },
+        "version_estandar": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "Versión mínima (SemVer) del estándar necesaria para interpretar correctamente esta pregunta — no la versión con la que se escribió, sino la que exige el conjunto de campos que usa (p. ej. una pregunta con 'grupo_id' exige al menos \"1.2.0\"). Opcional: existe sobre todo para bancos que guardan una pregunta por archivo (no dentro de un paquete envolvente con su propio 'version_estandar'), donde el archivo no tiene ninguna otra forma de autodescribirse. Ausencia = versión no declarada, no \"v1.0.0 asumido\"; validador/validar.js solo comprueba consistencia (que no sea menor que lo que los campos presentes requieren) cuando el campo sí está presente."
+        },
+        "grado": {
+          "type": "string",
+          "enum": ["3", "4", "5", "6", "7", "8", "9", "10", "11"],
+          "description": "Grado escolar al que corresponde la pregunta. Opcional."
+        },
+        "prueba": {
+          "type": "string",
+          "enum": ["saber11", "evaluar_para_avanzar"],
+          "description": "Programa de evaluación de origen. Opcional; el catálogo puede ampliarse en futuras versiones menores."
+        },
+        "procedencia": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "contenido": { "$ref": "#/$defs/nivelProcedencia" },
+            "clasificacion": { "$ref": "#/$defs/nivelProcedencia" },
+            "respuesta_correcta": { "$ref": "#/$defs/nivelProcedencia" }
+          },
+          "description": "Origen de cada bloque de la pregunta: contenido (contexto/enunciado/opciones), clasificacion (los 6 campos de metadata pedagógica) y respuesta_correcta (qué opción es la correcta). Ausencia = origen no declarado. Opcional."
+        },
+        "verificado": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "contenido": { "type": "boolean" },
+            "clasificacion": { "type": "boolean" },
+            "respuesta_correcta": { "type": "boolean" }
+          },
+          "description": "Si un humano confirmó la exactitud de cada bloque, independientemente de su procedencia. Opcional."
+        },
+        "fuentes": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "contenido": { "type": "string", "minLength": 1 },
+            "clasificacion": { "type": "string", "minLength": 1 },
+            "respuesta_correcta": { "type": "string", "minLength": 1 }
+          },
+          "description": "Nombre de archivo PDF (dentro de fuentes/, sin ruta) del documento del que se extrajo cada bloque. Opcional, y solo tiene sentido para bloques con procedencia oficial o extraida_oficial."
+        }
+      }
+    },
+    "formaEstandar": {
+      "type": "object",
+      "required": ["enunciado", "opciones"],
+      "properties": {
+        "enunciado": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/bloque" }
+        },
+        "opciones": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "$ref": "#/$defs/opcion" },
+          "description": "Al menos 2 opciones, exactamente 1 marcada es_correcta (validado en validador/validar.js). Antes de v1.2.0 se exigían exactamente 4; paquetes con 4 siguen siendo válidos."
+        }
+      }
+    },
+    "formaMiembroBancoOpciones": {
+      "type": "object",
+      "required": ["grupo_id", "enunciado", "respuesta_pool_id", "justificacion"],
+      "properties": {
+        "enunciado": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/bloque" },
+          "description": "La descripción/pista a emparejar contra el banco de opciones del grupo."
+        },
+        "respuesta_pool_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Id de la entrada en grupos[].banco que es la respuesta correcta. Existencia validada por validador/validar.js (referencia cruzada, no expresable en JSON Schema puro)."
+        },
+        "justificacion": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Por qué esa entrada del banco es la que corresponde a esta descripción."
+        }
+      }
+    },
+    "formaMiembroTextoConBlancos": {
+      "type": "object",
+      "required": ["grupo_id", "numero_blanco", "opciones"],
+      "properties": {
+        "numero_blanco": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Número del blanco tal como aparece marcado en el pasaje compartido del grupo (p. ej. 16). Único dentro de su grupo (validado por validador/validar.js)."
+        },
+        "opciones": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "$ref": "#/$defs/opcion" },
+          "description": "Esta pregunta no tiene 'enunciado' propio: el pasaje compartido del grupo (grupos[].contexto) es el único estímulo; estas opciones son las candidatas para llenar el blanco 'numero_blanco'."
+        }
+      }
+    },
     "nivelProcedencia": {
       "type": "string",
       "enum": ["oficial", "extraido_oficial", "ia_generada"]

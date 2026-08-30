@@ -52,6 +52,81 @@ Ya tiene resuelto: retroalimentación por opción (el punto que a OpenTest le
 falta) y el flujo de integración con ZipGrade (que queda fuera del estándar:
 ZipGrade solo aporta calificación, no contenido de preguntas).
 
+## Grupos de preguntas (v1.2.0) — requisito de integración, no solo dato nuevo
+
+A partir de v1.2.0, un paquete puede traer preguntas con `opciones` de
+cualquier tamaño (antes siempre 4) y preguntas miembro de un grupo
+(`grupo_id` + `tipo_item`) que no tienen `opciones` propias
+(`miembro_banco_opciones`, emparejamiento) o no tienen `enunciado` propio
+(`miembro_texto_con_blancos`, *cloze*) — ver `especificacion.md`, sección
+"Grupos de preguntas". Esto no es un caveat menor de datos: es un
+**requisito real de integración** para cualquier plataforma que quiera
+soportar áreas como Inglés, donde estos tipos de ejercicio son la norma, no
+la excepción.
+
+- **OpenTest y portal-estudiantes**, tal como están mapeados arriba, asumen
+  hoy "una pregunta = un enunciado + N opciones propias, renderizados
+  independientemente". Ninguno de los dos tiene hoy un concepto de "varias
+  preguntas comparten pantalla" o "las opciones vienen de otro lado" — esto
+  es territorio de UI nuevo, no un mapeo de campos adicional.
+- Antes de cargar contenido con `grupo_id`, cada plataforma debe decidir:
+  (a) implementar el renderizado consciente de grupos (resolver `grupo_id`
+  contra `paquete.grupos` y mostrar el estímulo/banco compartido una sola
+  vez), o (b) filtrar por `tipo_item` y **excluir** las preguntas que no
+  sean `"estandar"` (o ausente) hasta que sí lo implemente. Lo que no debe
+  hacer es intentar renderizar una pregunta `miembro_banco_opciones` o
+  `miembro_texto_con_blancos` como si fuera independiente — le faltan
+  campos a propósito (no tiene `opciones` o no tiene `enunciado`) y quedaría
+  rota en pantalla.
+- **Puntaje**: ninguna de las dos plataformas debe asumir "1 pregunta = 1
+  punto" al sumar un examen. El campo opcional `valor` (número, 1 por
+  defecto) es el peso real de cada pregunta; un grupo de 5 preguntas de
+  emparejamiento sigue sumando 5 puntos, no 1, aunque se muestre como una
+  sola pantalla.
+- **Preguntas de 3 (o 5, o más) opciones**: son válidas desde v1.2.0 sin
+  necesidad de `grupo_id`. Una plataforma que hoy asume "siempre 4, A-D" en
+  su UI (selector de respuesta, atajos de teclado, etc.) debe generalizar
+  ese supuesto antes de cargar contenido que no sea de Sociales/Naturales
+  tipo v1.0/v1.1 — el paquete **valida** igual, pero el render se ve mal si
+  el número de opciones está hardcodeado.
+
+## Retrocompletar `version_estandar` en preguntas existentes (v1.3.0)
+
+`version_estandar` a nivel de **pregunta** (distinto del que ya existe a
+nivel de paquete) es nuevo en v1.3.0 y **opcional** — ninguna pregunta
+existente deja de ser válida por no tenerlo. No hay obligación de
+retrocompletarlo. Pero si tu banco guarda preguntas sueltas fuera de un
+paquete (como `banco-preguntas-icfes`), vale la pena hacerlo una vez: sin
+este campo, un archivo aislado no tiene ninguna forma de decir de qué
+versión del estándar depende con solo mirarlo.
+
+**El criterio no es "cuándo se escribió la pregunta" sino "qué versión
+exige el conjunto de campos que trae"** — dos preguntas escritas el mismo
+día pueden necesitar versiones distintas si una usa `grupo_id` y la otra
+no. Recorre cada pregunta y asígnale la versión más alta que le corresponda
+según esta tabla (son excluyentes, usa la última que aplique):
+
+| La pregunta trae... | `version_estandar` |
+|---|---|
+| Nada más que lo de v1.0.0 (metadata pedagógica de 6 campos, `contexto`/`enunciado`/`opciones`, exactamente 4 opciones) | `"1.0.0"` |
+| `grado`, `prueba`, `procedencia`, `verificado`, `fuentes`, o `procedencia_justificacion`/`justificacion_verificada` en alguna opción | `"1.1.0"` |
+| `grupo_id`, `tipo_item`, `nivel_mcer`, `valor`, o `opciones` con un tamaño distinto de 4 | `"1.2.0"` |
+
+`validador/validar.js` valida esta consistencia automáticamente cuando el
+campo está presente (rechaza, por ejemplo, `"1.0.0"` en una pregunta con
+`grupo_id`) — así que un backfill automatizado con esta misma tabla puede
+verificarse corriendo el validador después: si pasa, los valores asignados
+son al menos suficientes.
+
+Esto es exactamente lo que hizo `banco-preguntas-icfes` para sus ~118
+preguntas existentes: un script de una sola pasada (`scripts/migrar-
+version-estandar.mjs` en ese repo) que lee cada `banco/<area>/<id>.json`,
+aplica la tabla de arriba y escribe el campo si no estaba presente. No es
+parte de este estándar (vive en el repo consumidor, no aquí), pero el
+patrón — recorrer el banco, inferir la versión por los campos presentes,
+escribir solo si falta — es reutilizable por cualquier otro banco que
+adopte este estándar.
+
 ## Qué NO resuelve este estándar
 
 - No decide qué hacer con el enum `CompetenciaSociales` de portal-estudiantes

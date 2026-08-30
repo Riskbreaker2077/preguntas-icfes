@@ -4,6 +4,61 @@ Este proyecto sigue [SemVer](https://semver.org/lang/es/). Las versiones se
 refieren al **estándar** (`version_estandar` dentro de un paquete), no
 necesariamente al número de versión de npm.
 
+## 1.3.0 — 2026-08-30
+
+Aditiva: no rompe paquetes v1.2.0 existentes.
+
+- `version_estandar` (opcional, por **pregunta**, SemVer): además del
+  `version_estandar` ya existente a nivel de paquete, cada pregunta puede
+  declarar la versión mínima del estándar que exige el conjunto de campos
+  que usa. Pensado sobre todo para bancos que guardan una pregunta por
+  archivo fuera de cualquier paquete envolvente (el caso de este propio
+  repo hermano `banco-preguntas-icfes`): sin este campo, un archivo suelto
+  no tiene ninguna forma de autodescribirse.
+- `validador/validar.js` ahora, cuando el campo está presente, comprueba
+  que no sea menor que la versión que exigen los campos realmente usados
+  (p. ej. una pregunta con `grupo_id` no puede declarar `"1.1.0"`) — evita
+  que quede desactualizado silenciosamente si la pregunta se edita después
+  y empieza a usar un campo más nuevo.
+- Ausencia del campo (el caso de las ~118 preguntas del banco previas a
+  esta versión) sigue siendo válida: "versión no declarada", no "v1.0.0
+  asumido". Ver `docs/adopcion.md` para el criterio de qué versión asignar
+  al retrocompletar preguntas existentes.
+
+## 1.2.0 — 2026-08-30
+
+Aditiva: no rompe paquetes v1.1.0 existentes. Ningún campo nuevo es
+obligatorio y `tipo_item` ausente se comporta exactamente como antes.
+
+- `grupos` (opcional, array a nivel de paquete): representa preguntas que
+  comparten una situación/lectura (`tipo: "contexto_compartido"`), un banco
+  de opciones que se consume entre varias preguntas
+  (`tipo: "banco_opciones"`, ejercicios de emparejamiento), o un pasaje con
+  espacios en blanco (`tipo: "texto_con_blancos"`, ejercicios de *cloze*).
+- `grupo_id` y `tipo_item` (opcionales, por pregunta): a qué grupo
+  pertenece una pregunta y qué forma estructural tiene
+  (`"estandar"` por defecto, `"miembro_banco_opciones"`,
+  `"miembro_texto_con_blancos"`). Una pregunta `miembro_banco_opciones` no
+  trae `opciones` propias (trae `respuesta_pool_id` + `justificacion`); una
+  pregunta `miembro_texto_con_blancos` no trae `enunciado` propio (trae
+  `numero_blanco` + `opciones`).
+- Un grupo puede declarar `metadata_pedagogica` (los 6 campos habituales)
+  para que las preguntas miembro que no traigan los suyos los hereden.
+- `nivel_mcer` (opcional, por pregunta): clasificación por nivel del Marco
+  Común Europeo de Referencia (`"Pre A1"`…`"C2"`), para áreas de lengua
+  extranjera que no usan Competencia/Componente de la misma forma.
+- `valor` (opcional, por pregunta, número > 0, 1 por defecto): peso de la
+  pregunta en la calificación total — necesario para que un grupo de N
+  preguntas siga sumando N puntos, no 1.
+- **`opciones` deja de exigir exactamente 4**: ahora exige al menos 2, sin
+  tope superior. Ningún paquete existente con 4 opciones se ve afectado.
+  **Caveat para integradores**: esto valida correctamente, pero una
+  plataforma cuya UI asuma "siempre 4, A-D" debe generalizar esa suposición
+  antes de cargar contenido con un número distinto de opciones — ver
+  `docs/adopcion.md`.
+- `ejemplos/paquete-grupos-ejemplo/`: paquete de ejemplo con los 3 tipos de
+  grupo, usando contenido real de un cuadernillo de Inglés grado 9.
+
 ## 1.1.0 — 2026-08-29
 
 Aditiva: no rompe paquetes v1.0.0 existentes.

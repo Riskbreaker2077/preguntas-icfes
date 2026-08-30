@@ -22,6 +22,109 @@
       "minItems": 1,
       "items": { "$ref": "pregunta.schema.json" },
       "description": "Los id deben ser únicos dentro del paquete (invariante validada por validador/validar.js, no expresable en JSON Schema puro)."
+    },
+    "grupos": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/grupo" },
+      "description": "Grupos de preguntas que comparten contexto, banco de opciones o pasaje con blancos (ver especificacion.md, sección \"Grupos de preguntas\"). Opcional; array vacío u omitido = sin grupos. Los id deben ser únicos dentro del paquete (validado por validador/validar.js)."
+    }
+  },
+  "$defs": {
+    "grupo": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["id", "tipo", "contexto"],
+          "additionalProperties": false,
+          "properties": {
+            "id": { "type": "string", "minLength": 1 },
+            "tipo": { "const": "contexto_compartido" },
+            "contexto": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "$ref": "pregunta.schema.json#/$defs/bloque" },
+              "description": "La situación/pasaje/instrucción compartida por las preguntas miembro (que además pueden traer su propio contexto adicional)."
+            },
+            "metadata_pedagogica": { "$ref": "#/$defs/metadataPedagogica" },
+            "procedencia_contenido": { "$ref": "pregunta.schema.json#/$defs/nivelProcedencia" },
+            "verificado_contenido": { "type": "boolean" },
+            "fuentes_contenido": { "type": "string", "minLength": 1 }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["id", "tipo", "banco"],
+          "additionalProperties": false,
+          "properties": {
+            "id": { "type": "string", "minLength": 1 },
+            "tipo": { "const": "banco_opciones" },
+            "contexto": {
+              "type": "array",
+              "items": { "$ref": "pregunta.schema.json#/$defs/bloque" },
+              "description": "Instrucciones compartidas del ejercicio de emparejamiento (p. ej. \"Relaciona cada descripción con la palabra correcta\"). Opcional."
+            },
+            "banco": {
+              "type": "array",
+              "minItems": 2,
+              "items": {
+                "type": "object",
+                "required": ["id", "contenido"],
+                "additionalProperties": false,
+                "properties": {
+                  "id": { "type": "string", "minLength": 1 },
+                  "contenido": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": { "$ref": "pregunta.schema.json#/$defs/bloque" }
+                  },
+                  "es_ejemplo": {
+                    "type": "boolean",
+                    "description": "true si esta entrada es el ejemplo resuelto mostrado al estudiante y nunca puede ser la respuesta correcta de una pregunta real del grupo. Opcional, por defecto false."
+                  }
+                }
+              },
+              "description": "Cada entrada tiene un id (la 'letra' o token que ve el estudiante) y contenido. Los id deben ser únicos dentro del banco (validado por validador/validar.js)."
+            },
+            "metadata_pedagogica": { "$ref": "#/$defs/metadataPedagogica" },
+            "procedencia_contenido": { "$ref": "pregunta.schema.json#/$defs/nivelProcedencia" },
+            "verificado_contenido": { "type": "boolean" },
+            "fuentes_contenido": { "type": "string", "minLength": 1 }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["id", "tipo", "contexto"],
+          "additionalProperties": false,
+          "properties": {
+            "id": { "type": "string", "minLength": 1 },
+            "tipo": { "const": "texto_con_blancos" },
+            "contexto": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "$ref": "pregunta.schema.json#/$defs/bloque" },
+              "description": "El pasaje compartido, con los espacios en blanco marcados inline en el propio texto (p. ej. \"the (16)_______ word matters\"). El estándar no interpreta ese marcador; es una convención tipográfica, no un campo estructurado."
+            },
+            "metadata_pedagogica": { "$ref": "#/$defs/metadataPedagogica" },
+            "procedencia_contenido": { "$ref": "pregunta.schema.json#/$defs/nivelProcedencia" },
+            "verificado_contenido": { "type": "boolean" },
+            "fuentes_contenido": { "type": "string", "minLength": 1 }
+          }
+        }
+      ]
+    },
+    "metadataPedagogica": {
+      "type": "object",
+      "required": ["competencia", "componente", "afirmacion", "evidencia", "estandar_asociado", "que_evalua"],
+      "additionalProperties": false,
+      "properties": {
+        "competencia": { "type": "string", "minLength": 1 },
+        "componente": { "type": "string", "minLength": 1 },
+        "afirmacion": { "type": "string", "minLength": 1 },
+        "evidencia": { "type": "string", "minLength": 1 },
+        "estandar_asociado": { "type": "string", "minLength": 1 },
+        "que_evalua": { "type": "string", "minLength": 1 }
+      },
+      "description": "Los 6 campos de metadata pedagógica, compartidos por todas las preguntas miembro de este grupo que no declaren los suyos propios (ver pregunta.schema.json, camposComunes). Si se declara, los 6 son obligatorios."
     }
   }
 }
