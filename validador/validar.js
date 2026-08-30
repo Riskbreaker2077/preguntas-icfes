@@ -430,6 +430,59 @@ function validarPregunta(pregunta, indice, errores, nombresImagenes, idsVistos, 
   }
 }
 
+// ---- Numeración dinámica (v1.4.0) ----
+// Marcador reservado dentro de un bloque de texto: "{{numero:<id-de-pregunta>}}"
+// (p. ej. "the {{numero:in-016}}_______ word matters"). No es un campo nuevo
+// del schema — "texto" sigue siendo un string cualquiera — es una convención
+// de contenido que este validador sí interpreta: comprueba que cada id
+// referenciado exista dentro de paquete.preguntas. Qué número se muestra ahí
+// para un estudiante concreto es responsabilidad de quien arma/entrega ese
+// examen, no de este validador ni del estándar — ver docs/especificacion.md,
+// sección "Numeración dinámica", y docs/adopcion.md para el contrato de
+// integración completo.
+const MARCADOR_NUMERO_DINAMICO = /\{\{numero:([^}]+)\}\}/g;
+
+function textosDeBloques(bloques) {
+  const textos = [];
+  for (const b of bloques || []) {
+    if (b?.tipo === "texto" && typeof b.texto === "string") textos.push(b.texto);
+  }
+  return textos;
+}
+
+function recolectarTextosDelPaquete(paquete) {
+  const textos = [];
+  for (const p of paquete.preguntas || []) {
+    textos.push(...textosDeBloques(p?.contexto));
+    textos.push(...textosDeBloques(p?.enunciado));
+    for (const o of p?.opciones || []) textos.push(...textosDeBloques(o?.contenido));
+  }
+  for (const g of paquete.grupos || []) {
+    textos.push(...textosDeBloques(g?.contexto));
+    for (const entrada of g?.banco || []) textos.push(...textosDeBloques(entrada?.contenido));
+  }
+  return textos;
+}
+
+function validarNumeracionDinamica(paquete, errores) {
+  const idsPregunta = new Set((paquete.preguntas || []).filter((p) => esStringNoVacio(p?.id)).map((p) => p.id));
+  for (const texto of recolectarTextosDelPaquete(paquete)) {
+    MARCADOR_NUMERO_DINAMICO.lastIndex = 0;
+    let m;
+    while ((m = MARCADOR_NUMERO_DINAMICO.exec(texto))) {
+      const idReferenciado = m[1];
+      if (!idsPregunta.has(idReferenciado)) {
+        error(
+          errores,
+          null,
+          "numeracion_dinamica",
+          `El marcador "{{numero:${idReferenciado}}}" referencia la pregunta "${idReferenciado}", que no existe en paquete.preguntas.`
+        );
+      }
+    }
+  }
+}
+
 /**
  * Valida un paquete de preguntas contra el estándar preguntas-icfes v1.
  *
@@ -493,6 +546,8 @@ export function validarPaquete(paquete, opciones = {}) {
       vistos.add(p.numero_blanco);
     }
   });
+
+  validarNumeracionDinamica(paquete, errores);
 
   const imagenesDisponibles = opciones.imagenesDisponibles
     ? new Set(opciones.imagenesDisponibles)

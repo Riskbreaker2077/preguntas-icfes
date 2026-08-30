@@ -127,6 +127,47 @@ patrón — recorrer el banco, inferir la versión por los campos presentes,
 escribir solo si falta — es reutilizable por cualquier otro banco que
 adopte este estándar.
 
+## Numeración dinámica (v1.4.0) — requisito de integración
+
+Desde v1.4.0, un bloque de texto puede traer `{{numero:<id-de-pregunta>}}`
+en vez de un número fijo (ver `especificacion.md`, sección "Numeración
+dinámica") — nace del caso real de un pasaje `texto_con_blancos` cuyo
+espacio en blanco original decía `(16)` porque en el cuadernillo de papel
+esa siempre era la pregunta 16, algo que deja de ser cierto en cuanto la
+misma pregunta se sirve en otro orden a otro estudiante.
+
+**Qué valida el estándar, qué no.** `validador/validar.js` solo comprueba
+que el `id` referenciado exista en el paquete — es una comprobación de
+referencia, igual que `grupo_id` o `respuesta_pool_id`. El estándar
+**no** calcula, ni define cómo calcular, "qué número le corresponde a la
+pregunta X en la entrega actual" — eso depende de cómo cada plataforma
+arma y sirve sus exámenes (orden fijo, aleatorizado por estudiante,
+subconjuntos), información que vive enteramente del lado de la plataforma,
+nunca dentro del contenido versionado en el banco.
+
+**Lo que cada plataforma debe decidir e implementar:**
+
+1. Antes de mostrarle un bloque de texto a un estudiante, escanearlo en
+   busca de `{{numero:ID}}` y sustituir cada ocurrencia por el número que
+   esa plataforma le asigna a la pregunta `ID` en la entrega actual de
+   *ese* estudiante — típicamente su posición secuencial en el examen tal
+   como se le presenta.
+2. Si una plataforma **todavía no implementa esta sustitución**, no debe
+   mostrar el texto tal cual (con las llaves y el id crudo visibles al
+   estudiante) — mismo principio que ya aplica a `tipo_item`: si no puedes
+   renderizarlo correctamente, exclúyelo en vez de mostrarlo roto. Filtra
+   (o retrasa la carga de) cualquier pregunta/grupo cuyo contenido
+   contenga este marcador hasta implementar la sustitución.
+3. La sustitución es puramente textual (reemplazar el marcador por
+   dígitos) — no cambia `numero_blanco`, `respuesta_pool_id`, ni ningún
+   otro campo estructural; esos siguen siendo identificadores internos
+   estables, independientes del número que finalmente se le muestra al
+   estudiante.
+
+No hay una implementación de referencia de este paso en este repo (el
+validador de referencia valida contenido guardado, no arma exámenes) —
+cada plataforma la resuelve con su propia lógica de entrega.
+
 ## Qué NO resuelve este estándar
 
 - No decide qué hacer con el enum `CompetenciaSociales` de portal-estudiantes

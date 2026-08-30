@@ -181,7 +181,11 @@
           "additionalProperties": false,
           "properties": {
             "tipo": { "const": "texto" },
-            "texto": { "type": "string", "minLength": 1 }
+            "texto": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Puede contener el marcador reservado \"{{numero:<id-de-pregunta>}}\" (p. ej. \"the {{numero:in-016}}_______ word matters\") para un número que depende de en qué posición se entregue esa pregunta a un estudiante concreto — no un valor fijo. Ver especificacion.md, sección 'Numeración dinámica'. Opcional: la inmensa mayoría de bloques de texto no lo usan."
+            }
           }
         },
         {

@@ -4,6 +4,29 @@ Este proyecto sigue [SemVer](https://semver.org/lang/es/). Las versiones se
 refieren al **estándar** (`version_estandar` dentro de un paquete), no
 necesariamente al número de versión de npm.
 
+## 1.4.0 — 2026-08-30
+
+Aditiva: no rompe paquetes v1.3.0 existentes. No cambia ninguna forma del
+schema (`texto` sigue siendo `string`) — es una convención de contenido
+nueva, con su propia validación de referencia.
+
+- Marcador `{{numero:<id-de-pregunta>}}`, permitido dentro de cualquier
+  bloque `texto` (contexto/enunciado/opciones de una pregunta, o
+  contexto/banco de un grupo): representa un número que depende de la
+  posición en la que un estudiante concreto ve esa pregunta en su examen,
+  no un valor fijo — nace del caso real de los pasajes `texto_con_blancos`,
+  cuyos espacios marcados con el número absoluto de la pregunta en el
+  cuadernillo original (`(16)`, `(17)`...) quedan mal en cuanto la misma
+  pregunta se sirve en otro orden a otro estudiante.
+- `validador/validar.js` comprueba que cada `id` referenciado exista en
+  `paquete.preguntas` — una validación de referencia, igual que `grupo_id`
+  o `respuesta_pool_id`. El estándar **no** define cómo se calcula el
+  número real mostrado a un estudiante: eso es responsabilidad explícita
+  de cada plataforma consumidora (ver `docs/adopcion.md`, "Numeración
+  dinámica — requisito de integración") — es, por diseño, información de
+  entrega, no contenido versionado.
+- Sin escape para `{{` literal — no se consideró necesario para v1.
+
 ## 1.3.0 — 2026-08-30
 
 Aditiva: no rompe paquetes v1.2.0 existentes.

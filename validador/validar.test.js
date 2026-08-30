@@ -550,6 +550,52 @@ test("acepta version_estandar ausente en cualquier pregunta, vieja o nueva", () 
   assert.equal(valido, true);
 });
 
+test('acepta un marcador "{{numero:ID}}" que referencia una pregunta existente del paquete', () => {
+  const paquete = paqueteValidoBase();
+  paquete.preguntas.push(preguntaValidaBase("p-2"));
+  paquete.preguntas[0].enunciado[0].texto = "Como se explica en la pregunta {{numero:p-2}}, ...";
+  const { valido, errores } = validarPaquete(paquete);
+  assert.deepEqual(errores, []);
+  assert.equal(valido, true);
+});
+
+test('rechaza un marcador "{{numero:ID}}" que referencia una pregunta inexistente', () => {
+  const paquete = paqueteValidoBase();
+  paquete.preguntas[0].enunciado[0].texto = "Ver la pregunta {{numero:no-existe}} para más contexto.";
+  const { valido, errores } = validarPaquete(paquete);
+  assert.equal(valido, false);
+  assert.ok(errores.some((e) => e.campo === "numeracion_dinamica" && /no-existe/.test(e.mensaje)));
+});
+
+test('detecta marcadores "{{numero:ID}}" dentro del pasaje compartido de un grupo texto_con_blancos', () => {
+  const paquete = paqueteValidoBase();
+  const grupo = grupoTextoConBlancosBase();
+  grupo.contexto = [{ tipo: "texto", texto: "Even the {{numero:b-1}}_______ word matters." }];
+  paquete.grupos = [grupo];
+  paquete.preguntas = [preguntaMiembroTextoConBlancosBase("b-1", grupo.id, 16)];
+
+  const { valido: v1, errores: e1 } = validarPaquete(paquete);
+  assert.deepEqual(e1, []);
+  assert.equal(v1, true);
+
+  grupo.contexto[0].texto = "Even the {{numero:no-tal-pregunta}}_______ word matters.";
+  const { valido: v2, errores: e2 } = validarPaquete(paquete);
+  assert.equal(v2, false);
+  assert.ok(e2.some((e) => e.campo === "numeracion_dinamica"));
+});
+
+test('detecta varios marcadores "{{numero:ID}}" en el mismo texto y en el contenido de una opción', () => {
+  const paquete = paqueteValidoBase();
+  paquete.preguntas.push(preguntaValidaBase("p-2"));
+  paquete.preguntas[0].contexto = [
+    { tipo: "texto", texto: "Compara con {{numero:p-2}} y con {{numero:p-1}}." },
+  ];
+  paquete.preguntas[0].opciones[0].contenido[0].texto = "Igual que en la pregunta {{numero:p-2}}.";
+  const { valido, errores } = validarPaquete(paquete);
+  assert.deepEqual(errores, []);
+  assert.equal(valido, true);
+});
+
 test("el paquete de ejemplo de grupos del repo es válido", () => {
   const rutaEjemploGrupos = path.join(dirname, "..", "ejemplos", "paquete-grupos-ejemplo", "paquete.json");
   const paquete = JSON.parse(readFileSync(rutaEjemploGrupos, "utf-8"));

@@ -5,7 +5,7 @@
 **Estándar abierto para empaquetar preguntas de selección múltiple tipo ICFES**
 
 [![Licencia: MIT](https://img.shields.io/badge/licencia-MIT-blue.svg)](LICENSE)
-[![Estándar](https://img.shields.io/badge/estándar-v1.3.0-6e40c9.svg)](CHANGELOG.md)
+[![Estándar](https://img.shields.io/badge/estándar-v1.4.0-6e40c9.svg)](CHANGELOG.md)
 [![Sin dependencias](https://img.shields.io/badge/runtime-cero%20dependencias-2e7d32.svg)](validador/validar.js)
 
 [Sitio](https://riskbreaker2077.github.io/preguntas-icfes/) ·
@@ -111,6 +111,9 @@ npm test   # corre validador/validar.test.js contra el paquete de ejemplo
 7. `version_estandar`, tanto de paquete como de pregunta (si esta última lo
    declara), sigue SemVer y no es menor que lo que exigen los campos
    realmente usados.
+8. Todo marcador `{{numero:ID}}` en un bloque de texto referencia un `id`
+   que existe en `paquete.preguntas` — ver "Numeración dinámica" en la
+   especificación.
 
 ## Versionado
 

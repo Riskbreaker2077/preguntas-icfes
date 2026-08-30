@@ -1,4 +1,4 @@
-# Especificación · Preguntas ICFES v1.3.0
+# Especificación · Preguntas ICFES v1.4.0
 
 ## Qué resuelve
 
@@ -280,6 +280,56 @@ que la versión mínima real de los campos usados (independientemente de si
 el número está bien formado como SemVer). Ver `docs/adopcion.md` para cómo
 retrocompletar este campo en preguntas ya existentes.
 
+## Numeración dinámica
+
+Parte del contenido de una pregunta necesita mostrar un número que **no se
+puede fijar al guardar la pregunta** porque depende de en qué posición del
+examen la vea un estudiante concreto — y esa posición puede variar entre
+entregas del mismo contenido (aleatorización anti-copia, subconjuntos
+distintos, exámenes con orden diferente por estudiante). El caso típico es
+el pasaje de un grupo `texto_con_blancos`: el original suele traer los
+espacios marcados con el número absoluto de la pregunta en el cuadernillo
+de origen (p. ej. *"the (16)\_\_\_\_\_\_\_ word matters"*), pero ese `16`
+solo es correcto para el estudiante que ve esa pregunta como la 16 de su
+examen — para otro que la ve como la 3, ese texto queda mal.
+
+Para esto, cualquier bloque `{ "tipo": "texto", "texto": "..." }` puede
+contener el marcador reservado:
+
+```
+{{numero:<id-de-pregunta>}}
+```
+
+p. ej. `"the {{numero:in-016}}_______ word matters"`. `<id-de-pregunta>`
+es el `id` de una pregunta que debe existir en `paquete.preguntas` — el
+mismo identificador estable que ya usa `grupo_id`/`respuesta_pool_id` para
+referenciar preguntas y entradas, no un número nuevo. El texto alrededor
+del marcador (paréntesis, guiones, lo que sea) se escribe tal cual, fuera
+de las llaves — el marcador en sí se sustituye **solo por el número**, sin
+formato propio.
+
+**El estándar define el marcador y su validación de referencia (que el id
+exista); no define cómo se calcula el número que lo reemplaza.** Ese
+cálculo — "qué posición ocupa la pregunta X en el examen que se le está
+sirviendo ahora mismo a este estudiante" — depende enteramente de cómo cada
+plataforma arma y entrega sus exámenes (orden fijo, aleatorizado,
+subconjuntos), y por diseño queda fuera del alcance de un contrato de
+datos. `validador/validar.js` solo comprueba que cada `{{numero:...}}`
+encontrado en cualquier bloque de texto del paquete (contexto, enunciado,
+contenido de opción, contexto de grupo, banco de grupo) referencie un `id`
+que en efecto existe entre `paquete.preguntas` — no resuelve ni sustituye
+nada.
+
+**Consumir un paquete con marcadores es un requisito de integración**, igual
+que resolver `grupo_id`: una plataforma que muestre el texto tal cual, con
+las llaves y el id literal visibles, está mostrando contenido roto al
+estudiante. Ver `docs/adopcion.md` para el contrato completo de qué debe
+implementar (o evitar) un consumidor que todavía no soporta esto.
+
+Si tu contenido necesita mostrar literalmente el texto `{{`, este mecanismo
+no lo soporta hoy (no hay escape) — no debería aparecer en prosa normal de
+examen, así que no se consideró necesario para v1.
+
 ## Invariantes
 
 Validadas por `validador/validar.js`; un solo error rechaza el paquete
@@ -297,6 +347,7 @@ completo (todo-o-nada), reportando todos los problemas encontrados:
 10. `numero_blanco` es único dentro de cada grupo de tipo `texto_con_blancos` (se puede repetir entre grupos distintos).
 11. `nivel_mcer` (si está presente) pertenece al catálogo MCER cerrado; `valor` (si está presente) es un número mayor que 0.
 12. `version_estandar` de una pregunta (si está presente) sigue el patrón SemVer y no es menor que la versión mínima que exigen los campos que esa pregunta realmente usa (ver "Versión por pregunta" arriba).
+13. Todo marcador `{{numero:ID}}` encontrado en cualquier bloque de texto del paquete referencia un `id` que existe en `paquete.preguntas` (ver "Numeración dinámica" arriba).
 
 ## Empaquetado ZIP
 

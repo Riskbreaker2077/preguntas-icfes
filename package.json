@@ -1,6 +1,6 @@
 {
   "name": "preguntas-icfes",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Estándar abierto de paquetes de preguntas tipo ICFES: schema, validador de referencia y ejemplos.",
   "type": "module",
   "license": "MIT",
